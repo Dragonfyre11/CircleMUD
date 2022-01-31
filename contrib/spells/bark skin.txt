@@ -1,0 +1,44 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Spell:		Bark Skin
+Written For:	Circle 3.1
+Written By:	Wyatt Hansen (Dragonfyre)
+Date:		1/31/22
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Type:		Proctection Spell
+Targets:	In Room, Self
+MaxCost	:	50
+MinCost	:	25
+ManaChng:	3
+Affects	:	AC
+Amount	:	-40
+Duration:	12 MUD Hours
+Stacks	:	Yes
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+spells.h
+-=-=-=-=-
+
+#define SPELL_BARK_SKIN			XX	<- Next number
+
+
+spell_parser.c
+-=-=-=-=-=-=-=-
+
+  spello(SPELL_BARK_SKIN, "bark skin", 50, 25, 3, POS_STANDING,
+      TAR_CHAR_ROOM, FALSE, MAG_AFFECTS,
+      "Your skin goes back to normal.");
+
+
+magic.c
+-=-=-=-
+
+  case SPELL_BARK_SKIN:
+    af[0].location = APPLY_AC;
+    af[0].modifier = -40;
+    af[0].duration = 12;
+    accum_duration = TRUE;
+    to_vict = "Your skin turns to wood!";
+    break;
