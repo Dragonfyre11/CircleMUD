@@ -1,0 +1,46 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Spell:		Acid Blast
+Written For:	Circle 3.1
+Written By:	Wyatt Hansen (Dragonfyre)
+Date:		1/31/22
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Type:		Damage Spell
+Targets:	Single, Fighting
+MaxCost	:	25
+MinCost	:	10
+ManaChng:	3
+Damage	:	Random Number (6, 7) + 7			Total:	13 - 14 Damage
+		If Magic-User, Random Number (7, 8) + 7		Total:	14 - 15 Damage
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+The damage and mana numbers need changing depending on your balancing needs. They are
+default at the time of writting this spell.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+spells.h
+-=-=-=-=-
+Add:
+
+#define SPELL_ACID_BLAST			XX	<- Next number
+
+
+spell_parser.c
+-=-=-=-=-=-=-=-
+
+  spello(SPELL_ACID_BLAST, "acid blast", 25, 10, 3, POS_FIGHTING,
+      TAR_CHAR_ROOM | TAR_FIGHT_VICT, TRUE, MAG_DAMAGE,
+      NULL);
+
+
+magic.c
+-=-=-=-
+Inside mag_damage(
+
+  case SPELL_ACID_BLAST:
+      if (IS_MAGIC_USER(ch))
+          dam = dice(7, 8) + 7;
+      else
+          dam = dice(6, 7) + 7;
+      break;
