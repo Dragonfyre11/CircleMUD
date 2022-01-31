@@ -1,0 +1,191 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Skill:		Stomp
+Written For:	Circle 3.1
+Written By:	Wyatt Hansen (Dragonfyre)
+Date:		1/31/22
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Type:		Damage Skill
+Targets:	Single, Fighting
+Class:		Cleric, Lvl 5
+MvCost:		20
+Damage:		GET_LEVEL(ch) / 2		(Lvl 100 = 50 Damage)
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+This skill was meant to be a 'kick style' skill for clerics or characters that
+are magic wielding but do have many skills. I believe I pretty much used do_kick
+as a template and just redid the skill. Of course the skill itself needs to be
+balanced to your MUD.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+spells.h
+-=-=-=-=-
+Search for :
+/* PLAYER SKILLS - Numbered from MAX_SPELLS+1 to MAX_SKILLS */
+Add:
+
+#define SKILL_STOMP			XX	<- Next number
+
+
+
+spell_parser.c
+-=-=-=-=-=-=-=-
+
+Search for :
+void mag_assign_spells(void)
+{
+
+At the very bottom, there are a bunch of skillo(SKILL_ statements.
+Add this to the bottom inside the last } :
+
+  skillo(SKILL_STMOP, "stomp");
+
+
+act.offensive.c
+-=-=-=-=-=-=-=-
+
+Near the top with all other declares:
+ACMD(do_stomp);
+
+At the bottom of the file is fine:
+
+ACMD(do_stomp)
+{
+  char arg[MAX_INPUT_LENGTH];
+  struct char_data *vict;
+  int percent, prob;
+  int cost = 20;                // This is the cost in MOVE points to use this skill.
+
+  if (IS_NPC(ch) || !GET_SKILL(ch, SKILL_STOMP)) {
+    send_to_char(ch, "You have no idea how.\r\n");
+    return;
+  }
+
+  one_argument(argument, arg);
+
+  if (!(vict = get_char_vis(ch, arg, NULL, FIND_CHAR_ROOM))) {
+    if (FIGHTING(ch) && IN_ROOM(ch) == IN_ROOM(FIGHTING(ch))) {
+      vict = FIGHTING(ch);
+    } else {
+      send_to_char(ch, "Stomp who?\r\n");
+      return;
+    }
+  }
+
+  if (vict == ch) {
+    send_to_char(ch, "Aren't we funny today...\r\n");
+    return;
+  }
+
+  if (GET_MOVE(ch) < cost) {
+    send_to_char(ch, "Your too exhausted to do that right now!\r\n");
+    return;
+  }
+
+  /* 101% is a complete failure */
+  percent = ((10 - (compute_armor_class(vict) / 10)) * 2) + rand_number(1, 101);
+  prob = GET_SKILL(ch, SKILL_STOMP);
+
+  if (percent > prob) {
+    damage(ch, vict, 0, SKILL_STOMP);                       // Miss
+  } else {
+    GET_MOVE(ch) -= cost;
+    damage(ch, vict, GET_LEVEL(ch) / 2, SKILL_STOMP);       // Hit
+    WAIT_STATE(ch, PULSE_VIOLENCE * 3);
+  }
+}
+
+
+interpreter.c
+-=-=-=-=-=-=-
+
+In alphabetical order! (Very important)
+
+ACMD(do_steal);
+ACMD(do_stomp);		<---
+ACMD(do_switch);
+
+And a bit lower down....
+
+  { "strut"    , POS_STANDING, do_action   , 0, 0 },
+  { "stomp"    , POS_FIGHTING, do_stomp    , 1, 0 },			<---
+  { "sulk"     , POS_RESTING , do_action   , 0, 0 },
+
+
+lib/misc/messages
+-=-=-=-=-=-=-=-=-
+
+Search for :
+Weapon Attacks
+
+Before this: 
+Before that is the end of the offensive skill messages. Lets
+add one for our new skill/
+
+This is the format for displaying skill messages to players:
+* Skill name
+M
+ XXX  <- This number MUST be the number you assigned in spells.h
+
+Feel free to change these. I only wrote them up when I uploaded this
+code to GitHub.
+
+Format:
+Death Msg to You
+Death Msg to Them
+Death Msg to Room
+Miss Msg to You
+Miss Msg to Them
+Miss Msg to Room
+Hit Msg to You
+Hit Msg to Them
+Hit Msg to Room
+Try to hit a God Msg to You
+Try to hit a God Msg to Them
+Try to hit a God Msg to Room
+
+ADD THIS BELOW TO /messages:
+
+* Stomp
+M
+ 134
+You bring your boots down right on $N's face and stomp the life out of them!
+$n raises their boots above your head, this is the last you ever see....
+$n brings their boots right down upon $N's face, stomping the life out of them!
+You try to stomp $N but miss by a mile!
+$n tries to stomp you but misses by a mile!
+$n attemptes to stomp $N but needs to readjust their aim.
+You land a beautiful stomp straight to $N's midsection!
+$n lands an amazing stomp straight to your midsection!
+$n lands a beautiful stomp straight to $N's midsection!
+You consider trying to stomp $N, but quickly change your mind.
+$n eyes you over trying to get a stomp in.
+$n looks as if they are considering stomping $N.
+
+
+FINALLY!
+The Help File:
+
+lib/text/help/commands.hlp
+-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+** IMPORTANT **
+Help commands must begin with a # and end with an #. Or all command
+entries must end with a #. Either way, you must have an # at the
+beginning (end of last help command) and than end with its own #.
+
+
+
+
+
+#
+STOMP
+
+Usage: stomp <victim>
+
+As with all skills, stomp depends upon how well you have learned the skill.
+The higher your level, the more damage you will do with this skill. 
+
+See also: BASH, KICK, RESCUE
+#
